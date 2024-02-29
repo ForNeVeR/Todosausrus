@@ -7,11 +7,13 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.RangeMarker
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import git4idea.repo.GitRepository
 import kotlinx.coroutines.CoroutineScope
 import me.fornever.todosaurus.TodosaurusBundle
 import me.fornever.todosaurus.models.CreateIssueModel
 import me.fornever.todosaurus.models.RepositoryModel
+import me.fornever.todosaurus.models.ToDoItem
 import me.fornever.todosaurus.views.CreateIssueDialog
 import org.jetbrains.plugins.github.api.data.GithubIssue
 import org.jetbrains.plugins.github.authentication.GHAccountsUtil
@@ -36,8 +38,12 @@ class ToDoService(private val project: Project, private val scope: CoroutineScop
 
     fun hasNewToDoItem(range: RangeMarker): Boolean {
         val text = range.document.getText(range.textRange)
-        return newToDoItemPattern.containsMatchIn(text)
+        return hasNewToDoItem(text)
     }
+
+    fun hasNewToDoItem(text: String): Boolean = newToDoItemPattern.containsMatchIn(text)
+
+    fun extractItems(psiElement: PsiElement): Sequence<ToDoItem> = TODO()
 
     fun showCreateIssueDialog(range: RangeMarker) {
         val data = calculateData(range)

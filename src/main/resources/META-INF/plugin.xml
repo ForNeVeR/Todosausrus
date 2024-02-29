@@ -19,5 +19,8 @@
         <notificationGroup id="TodosaurusNotifications"
                            displayType="BALLOON"
                            key="notification.group.name"/>
+
+        <codeInsight.lineMarkerProvider implementationClass="me.fornever.todosaurus.gutter.GutterIconProvider"
+                                        language=""/>
     </extensions>
 </idea-plugin>

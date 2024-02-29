@@ -15,15 +15,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.fornever.todosaurus.models.CreateIssueModel
 import me.fornever.todosaurus.models.RepositoryModel
+import me.fornever.todosaurus.services.env.GitHubTokenStorage
+import me.fornever.todosaurus.services.env.IdeaGitHubTokenStorage
 import org.jetbrains.plugins.github.api.GithubApiRequestExecutor
 import org.jetbrains.plugins.github.api.GithubApiRequests
 import org.jetbrains.plugins.github.api.GithubServerPath
 import org.jetbrains.plugins.github.api.data.GithubIssue
-import org.jetbrains.plugins.github.authentication.accounts.GithubAccount
-import org.jetbrains.plugins.github.util.GHCompatibilityUtil
 
 @Service(Service.Level.PROJECT)
-class GitHubService(private val project: Project) {
+class GitHubService(private val project: Project, private val gitHubTokenStorage: GitHubTokenStorage) {
+
+    constructor(project: Project) : this(project, IdeaGitHubTokenStorage.getInstance(project))
 
     companion object {
         const val GITHUB_CODE_URL_REPLACEMENT = "\${GITHUB_CODE_URL}"
@@ -35,7 +37,7 @@ class GitHubService(private val project: Project) {
         val repository = model.selectedRepository ?: error("Repository is not selected.")
         val account = model.selectedAccount ?: error("Account is not selected.")
 
-        val token = getApiToken(account)
+        val token = gitHubTokenStorage.getOrRequestToken(account) ?: error("Token is not found.")
         val executor = GithubApiRequestExecutor.Factory.getInstance().create(token)
 
         val issueBody = readAction {
@@ -52,10 +54,6 @@ class GitHubService(private val project: Project) {
         return withContext(Dispatchers.IO) {
             executor.execute(request)
         }
-    }
-
-    private fun getApiToken(account: GithubAccount): String {
-        return GHCompatibilityUtil.getOrRequestToken(account, project) ?: error("Token is not found.")
     }
 
     @RequiresReadLock
